@@ -82,17 +82,6 @@ DJANGO_APPS = [
 
 LOCAL_APPS = [
     "apps.users.apps.UsersConfig",
-    "apps.automations.apps.AutomationsConfig",
-    "apps.execution_group.executions.apps.ExecutionsConfig",
-    "apps.execution_group.steps.apps.StepsConfig",
-    "apps.execution_group.logs.apps.LogsConfig",
-    "apps.departments.apps.DepartmentsConfig",
-    "apps.business.apps.BusinessConfig",
-    "apps.positions.apps.PositionsConfig",
-    "apps.scheduler.apps.SchedulerConfig",
-    "apps.authtokens.apps.AuthtokensConfig",
-    "apps.botlogger_group.botloggers.apps.BotloggersConfig",
-    "apps.botlogger_group.versions.apps.VersionsConfig",
 ]
 
 THIRD_PARTY_APPS = [
@@ -102,7 +91,6 @@ THIRD_PARTY_APPS = [
     "rest_framework.authtoken",
     "drf_spectacular",
     "django_filters",
-    "silk",
     "simple_history",
 ]
 
@@ -121,7 +109,6 @@ MIDDLEWARE = [
     # necessário para request.user no Django (e útil mesmo usando DRF)
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "silk.middleware.SilkyMiddleware",
     "simple_history.middleware.HistoryRequestMiddleware",
     "django.middleware.locale.LocaleMiddleware",
 ]
@@ -147,16 +134,25 @@ TEMPLATES = [
 # =============================================================================
 # 8) DATABASE
 # =============================================================================
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("POSTGRES_DB"),
-        "USER": os.getenv("POSTGRES_USER"),
-        "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
-        "HOST": os.getenv("POSTGRES_HOST"),
-        "PORT": os.getenv("POSTGRES_PORT"),
+SELECTED_DB = os.getenv("SWITCH_DB")
+if SELECTED_DB == "sqlite":
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
     }
-}
+elif SELECTED_DB == "postgres":
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.getenv("POSTGRES_DB"),
+            "USER": os.getenv("POSTGRES_USER"),
+            "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
+            "HOST": os.getenv("POSTGRES_HOST"),
+            "PORT": os.getenv("POSTGRES_PORT"),
+        }
+    }
 
 
 # =============================================================================
@@ -186,7 +182,7 @@ MEDIA_ROOT = os.getenv("MEDIA_ROOT", "/vol/web/media")
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
-        "rest_framework.authentication.TokenAuthentication",
+        # "rest_framework.authentication.TokenAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
