@@ -14,7 +14,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 def env_bool(name: str, default: bool = False) -> bool:
-    return os.getenv(name, "True" if default else "False").lower() in ("1", "true", "yes", "on")
+    return os.getenv(name, "True" if default else "False").lower() in (
+        "1",
+        "true",
+        "yes",
+        "on",
+    )
 
 
 def env_int(name: str, default: int) -> int:
@@ -126,7 +131,9 @@ TEMPLATES = [
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [],
         "APP_DIRS": True,
-        "OPTIONS": {"context_processors": ["django.template.context_processors.request"]},
+        "OPTIONS": {
+            "context_processors": ["django.template.context_processors.request"]
+        },
     }
 ]
 
@@ -159,7 +166,9 @@ elif SELECTED_DB == "postgres":
 # 9) PASSWORD VALIDATORS
 # =============================================================================
 AUTH_PASSWORD_VALIDATORS = [
-    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+    },
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
@@ -249,7 +258,15 @@ LOGGING = {
     "handlers": {"console": {"class": "logging.StreamHandler"}},
     "loggers": {
         # Isso ajuda MUITO a diagnosticar 400 por host inválido
-        "django.security.DisallowedHost": {"handlers": ["console"], "level": "ERROR", "propagate": False},
-        "django.request": {"handlers": ["console"], "level": "ERROR", "propagate": True},
+        "django.security.DisallowedHost": {
+            "handlers": ["console"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+        "django.request": {
+            "handlers": ["console"],
+            "level": "ERROR",
+            "propagate": True,
+        },
     },
 }

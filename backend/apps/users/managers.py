@@ -2,7 +2,6 @@ from django.contrib.auth.models import BaseUserManager
 
 
 class UserManager(BaseUserManager):
-
     def active(self):
         return self.filter(is_active=True)
 

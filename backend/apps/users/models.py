@@ -12,17 +12,15 @@ class User(AbstractUser):
     )
 
     birth_date = models.DateField(
-        null=True,
-        blank=True,
-        verbose_name="Data de Aniversário"
+        null=True, blank=True, verbose_name="Data de Aniversário"
     )
 
     objects: UserManager = UserManager()  # type: ignore
 
     REQUIRED_FIELDS = [
-        'email',
-        'first_name',
-        'last_name',
+        "email",
+        "first_name",
+        "last_name",
     ]
 
     def __str__(self):

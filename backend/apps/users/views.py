@@ -25,68 +25,84 @@ from apps.users.filters import UserFilter
     list=extend_schema(
         responses={
             200: ReadUserSerializer(many=True),
-            401: OpenApiResponse(description="Não autenticado", response=DefaultErrorSerializer),
-            403: OpenApiResponse(description="Sem permissão", response=DefaultErrorSerializer),
+            401: OpenApiResponse(
+                description="Não autenticado", response=DefaultErrorSerializer
+            ),
+            403: OpenApiResponse(
+                description="Sem permissão", response=DefaultErrorSerializer
+            ),
         }
     ),
     retrieve=extend_schema(
         responses={
             200: ReadUserSerializer,
-            404: OpenApiResponse(description="Usuário não encontrado", response=DefaultErrorSerializer),
+            404: OpenApiResponse(
+                description="Usuário não encontrado", response=DefaultErrorSerializer
+            ),
         }
     ),
     create=extend_schema(
         responses={
             201: RegistrationSerializer,
-            400: OpenApiResponse(description="Erro de validação", response=DefaultErrorSerializer),
+            400: OpenApiResponse(
+                description="Erro de validação", response=DefaultErrorSerializer
+            ),
         }
     ),
 )
-class UserViewSet(viewsets.GenericViewSet,
-                  mixins.ListModelMixin,
-                  mixins.CreateModelMixin,
-                  mixins.RetrieveModelMixin,
-                  mixins.UpdateModelMixin,
-                  mixins.DestroyModelMixin):
+class UserViewSet(
+    viewsets.GenericViewSet,
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+):
     queryset = User.objects.all()
     filterset_class = UserFilter
     parser_classes = [MultiPartParser]
     serializer_class = WriteUserSerializer
 
     def get_permissions(self):
-        if self.action == 'create':
+        if self.action == "create":
             return [AllowAny()]
-        if self.action in {'me', 'change_password'}:
+        if self.action in {"me", "change_password"}:
             return [IsAuthenticated()]
         return [IsAdminUser()]
 
     def get_serializer_class(self):
-        if self.action == 'create':
+        if self.action == "create":
             return RegistrationSerializer
-        if self.action == 'me':
+        if self.action == "me":
             return ProfileSerializer
-        if self.action in {'list', 'retrieve'}:
+        if self.action in {"list", "retrieve"}:
             return ReadUserSerializer
         return WriteUserSerializer
 
     @extend_schema(
-        methods=['get'],
+        methods=["get"],
         responses={200: ProfileSerializer},
     )
     @extend_schema(
-        methods=['patch'],
+        methods=["patch"],
         request=ProfileSerializer,
         responses={
             200: ProfileSerializer,
-            400: OpenApiResponse(description="Erro de validação", response=DefaultErrorSerializer),
+            400: OpenApiResponse(
+                description="Erro de validação", response=DefaultErrorSerializer
+            ),
         },
     )
-    @action(detail=False, methods=['get', 'patch'], url_path='me', parser_classes=[MultiPartParser])
+    @action(
+        detail=False,
+        methods=["get", "patch"],
+        url_path="me",
+        parser_classes=[MultiPartParser],
+    )
     def me(self, request):
-        if request.method == 'GET':
+        if request.method == "GET":
             return Response(ProfileSerializer(request.user).data)
-        serializer = ProfileSerializer(
-            request.user, data=request.data, partial=True)
+        serializer = ProfileSerializer(request.user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
@@ -95,10 +111,12 @@ class UserViewSet(viewsets.GenericViewSet,
         request=ChangePasswordSerializer,
         responses={
             200: OpenApiResponse(description="Senha alterada com sucesso"),
-            400: OpenApiResponse(description="Erro de validação", response=DefaultErrorSerializer),
-        }
+            400: OpenApiResponse(
+                description="Erro de validação", response=DefaultErrorSerializer
+            ),
+        },
     )
-    @action(detail=False, methods=['post'], url_path='change-password')
+    @action(detail=False, methods=["post"], url_path="change-password")
     def change_password(self, request):
         serializer = ChangePasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -106,7 +124,9 @@ class UserViewSet(viewsets.GenericViewSet,
         user = request.user
 
         if not user.check_password(serializer.validated_data["current_password"]):
-            return Response({"detail": "Senha atual incorreta."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Senha atual incorreta."}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         user.set_password(serializer.validated_data["new_password"])
         user.save(update_fields=["password"])
