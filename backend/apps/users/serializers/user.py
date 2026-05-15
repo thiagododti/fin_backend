@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from apps.users.models import User
+from apps.users import services as user_services
 from django.contrib.auth.password_validation import validate_password
+from shared.validators import validate_photo_size
 
 
 class BaseUserSerializer(serializers.ModelSerializer):
@@ -66,27 +68,16 @@ class WriteUserSerializer(BaseUserSerializer):
     def create(self, validated_data):
         password = validated_data.pop("password")
         validated_data.pop("password2", None)
-        return User.objects.create_user(password=password, **validated_data)
+        return user_services.create_user(password=password, **validated_data)
 
     def update(self, instance, validated_data):
         password = validated_data.pop("password", None)
         validated_data.pop("password2", None)
-
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-
-        if password:
-            instance.set_password(password)
-
-        instance.save()
-        return instance
+        return user_services.update_user(instance, password=password, **validated_data)
 
     @staticmethod
     def validate_photo(value):
-        max_size = 2 * 1024 * 1024  # 2MB
-        if value.size > max_size:
-            raise serializers.ValidationError("A imagem não pode ser maior que 2MB.")
-        return value
+        return validate_photo_size(value)
 
 
 class ChangePasswordSerializer(serializers.Serializer):
@@ -120,11 +111,12 @@ class ProfileSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id"]
 
+    def update(self, instance, validated_data):
+        return user_services.update_user(instance, **validated_data)
+
     @staticmethod
     def validate_photo(value):
-        if value.size > 2 * 1024 * 1024:
-            raise serializers.ValidationError("A imagem não pode ser maior que 2MB.")
-        return value
+        return validate_photo_size(value)
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
@@ -161,4 +153,4 @@ class RegistrationSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data.pop("password2")
         password = validated_data.pop("password")
-        return User.objects.create_user(password=password, **validated_data)
+        return user_services.create_user(password=password, **validated_data)

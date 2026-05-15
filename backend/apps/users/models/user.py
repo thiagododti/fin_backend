@@ -15,7 +15,7 @@ class User(AbstractUser):
         null=True, blank=True, verbose_name="Data de Aniversário"
     )
 
-    objects: UserManager = UserManager()  # type: ignore
+    objects: UserManager = UserManager()
 
     REQUIRED_FIELDS = [
         "email",

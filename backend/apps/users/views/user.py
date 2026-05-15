@@ -5,7 +5,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiResponse
-from config.serializers import DefaultErrorSerializer
+from shared.serializers import DefaultErrorSerializer
+from shared.mixins import BlockPutMixin
 
 from apps.users.serializers import (
     ReadUserSerializer,
@@ -16,8 +17,7 @@ from apps.users.serializers import (
 )
 from apps.users.models import User
 from apps.users.filters import UserFilter
-
-# Create your views here.
+from apps.users import services as user_services
 
 
 @extend_schema(tags=["Usuários"], description="Operações de CRUD para usuários.")
@@ -55,6 +55,7 @@ class UserViewSet(
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
+    BlockPutMixin,
     mixins.UpdateModelMixin,
     mixins.DestroyModelMixin,
 ):
@@ -120,15 +121,12 @@ class UserViewSet(
     def change_password(self, request):
         serializer = ChangePasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
-        user = request.user
-
-        if not user.check_password(serializer.validated_data["current_password"]):
-            return Response(
-                {"detail": "Senha atual incorreta."}, status=status.HTTP_400_BAD_REQUEST
+        try:
+            user_services.change_password(
+                request.user,
+                serializer.validated_data["current_password"],
+                serializer.validated_data["new_password"],
             )
-
-        user.set_password(serializer.validated_data["new_password"])
-        user.save(update_fields=["password"])
-
+        except user_services.InvalidCurrentPassword as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response({"detail": "Senha alterada com sucesso."})
