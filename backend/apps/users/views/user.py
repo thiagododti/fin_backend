@@ -102,8 +102,8 @@ class UserViewSet(
     )
     def me(self, request):
         if request.method == "GET":
-            return Response(ProfileSerializer(request.user).data)
-        serializer = ProfileSerializer(request.user, data=request.data, partial=True)
+            return Response(self.get_serializer(request.user).data)
+        serializer = self.get_serializer(request.user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
