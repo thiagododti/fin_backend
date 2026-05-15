@@ -1,6 +1,6 @@
 from rest_framework import viewsets, mixins, status
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
-from rest_framework.parsers import MultiPartParser
+from rest_framework.parsers import MultiPartParser, JSONParser, FormParser
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -61,7 +61,7 @@ class UserViewSet(
 ):
     queryset = User.objects.all()
     filterset_class = UserFilter
-    parser_classes = [MultiPartParser]
+    parser_classes = [MultiPartParser, FormParser]
     serializer_class = WriteUserSerializer
 
     def get_permissions(self):
@@ -117,7 +117,12 @@ class UserViewSet(
             ),
         },
     )
-    @action(detail=False, methods=["post"], url_path="change-password")
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="change-password",
+        parser_classes=[JSONParser, FormParser],
+    )
     def change_password(self, request):
         serializer = ChangePasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
